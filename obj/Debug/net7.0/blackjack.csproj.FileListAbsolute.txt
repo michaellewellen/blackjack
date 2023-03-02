@@ -1,0 +1,15 @@
+C:\Users\micha\code\blackjack\bin\Debug\net7.0\blackjack.exe
+C:\Users\micha\code\blackjack\bin\Debug\net7.0\blackjack.deps.json
+C:\Users\micha\code\blackjack\bin\Debug\net7.0\blackjack.runtimeconfig.json
+C:\Users\micha\code\blackjack\bin\Debug\net7.0\blackjack.dll
+C:\Users\micha\code\blackjack\bin\Debug\net7.0\blackjack.pdb
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.csproj.AssemblyReference.cache
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.AssemblyInfoInputs.cache
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.AssemblyInfo.cs
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.csproj.CoreCompileInputs.cache
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.dll
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\refint\blackjack.dll
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.pdb
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\blackjack.genruntimeconfig.cache
+C:\Users\micha\code\blackjack\obj\Debug\net7.0\ref\blackjack.dll
