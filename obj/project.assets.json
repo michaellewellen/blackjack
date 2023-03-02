@@ -8,19 +8,19 @@
     "net7.0": []
   },
   "packageFolders": {
-    "C:\\Users\\micha\\.nuget\\packages\\": {}
+    "C:\\Users\\michael.lewellen\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\micha\\code\\blackjack\\blackjack.csproj",
+      "projectUniqueName": "C:\\Users\\michael.lewellen\\Desktop\\code\\blackjack\\blackjack.csproj",
       "projectName": "blackjack",
-      "projectPath": "C:\\Users\\micha\\code\\blackjack\\blackjack.csproj",
-      "packagesPath": "C:\\Users\\micha\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\micha\\code\\blackjack\\obj\\",
+      "projectPath": "C:\\Users\\michael.lewellen\\Desktop\\code\\blackjack\\blackjack.csproj",
+      "packagesPath": "C:\\Users\\michael.lewellen\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\michael.lewellen\\Desktop\\code\\blackjack\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\micha\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\michael.lewellen\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
       "originalTargetFrameworks": [
@@ -61,7 +61,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.102\\RuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.201\\RuntimeIdentifierGraph.json"
       }
     }
   }
