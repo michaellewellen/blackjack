@@ -3,13 +3,36 @@ List<Card> dealersHand = new List<Card>();
 List<Card> playersHand = new List<Card>();
 Console.Clear();
 loadMenu();
-string playAgain = "Y";
-int winnings = 500;
+string? playAgain = "Y";
+double winnings = 500;
 int bet = 0;
-while (playAgain.ToUpper() != "Q")
+while (playAgain != "Q")
 {
     bet = betScreen(winnings);
-    playAgain = "Q";
+    Console.Clear();
+    dealersHand = getCards(ref deckOfCards,dealersHand,2,true);
+    playersHand = getCards(ref deckOfCards,playersHand,2,false);
+    int gameStatus = playTheGame(dealersHand,playersHand, ref deckOfCards);
+    switch (gameStatus)
+    {
+        case 0: 
+            winnings -= bet;
+            Console.WriteLine("You lost!");
+            break;
+        case 1: 
+            winnings += bet;
+            Console.WriteLine("You Won");
+            break;
+        case 2:
+            winnings += 1.5*bet;
+            break;
+        case 3: 
+            Console.WriteLine("You pushed");
+            break;
+    }
+    Console.WriteLine("Press any key to play again or (Q) to quit");
+    playAgain = Console.ReadKey(true).ToString();
+    playAgain = playAgain.ToUpper();
 }
 
 Stack<Card> shuffleCards()
@@ -48,6 +71,7 @@ List<Card> getCards(ref Stack<Card> deck, List<Card> cards,int num, bool isDeale
             temp.yValue = 8;
         temp.xValue = i * 5;
         cards.Add(temp);
+        cards[i].printCard();
       
     }
     return cards;
@@ -73,7 +97,7 @@ void loadMenu()
     Console.ReadKey(true);
 
 }
-int betScreen(int x)
+int betScreen(double x)
 {
     string placeYourBet = @"
     The game is Black Jack, your goal is to get 21.  If you do it in two cards thats a blackjack
@@ -84,11 +108,9 @@ int betScreen(int x)
     Stack<Card> deck = shuffleCards();
     List<Card> topRow = new List<Card>();
     List<Card> bottomRow = new List<Card>();
-    topRow = getCards(ref deck,topRow,20,true);
-    bottomRow = getCards(ref deck,bottomRow,20,false);
-    Console.BackgroundColor = ConsoleColor.White;
-    Console.ForegroundColor = ConsoleColor.Red;
-    for (int i = 0; i<20; i++)
+    topRow = getCards(ref deck,topRow,5,true);
+    bottomRow = getCards(ref deck,bottomRow,5,false);
+    for (int i = 0; i<topRow.Count(); i++)
     {
         topRow[i].hidden = true;
         bottomRow[i].hidden = true;
@@ -97,8 +119,7 @@ int betScreen(int x)
         bottomRow[i].printCard();
     }
 
-    Console.BackgroundColor = ConsoleColor.Black;
-    Console.ForegroundColor = ConsoleColor.White;
+   
     Console.SetCursorPosition(0,15);
     Console.WriteLine(placeYourBet);
     Console.Write($"How much of your ${x} do you want to bet? ");
@@ -125,6 +146,99 @@ int betScreen(int x)
     return wager;
 }
 
+int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
+{
+    Console.SetCursorPosition(0,14 );
+    int showing = deal[1].value;
+    int dealValue = 0;
+    int altdealValue = 0;
+    int playValue = 0;
+    int altplayValue = 0;
+    for (int i = 0; i< play.Count(); i++)
+    {
+        dealValue += deal[i].value;
+        playValue += play[i].value;
+        altdealValue += deal[i].altValue;
+        altplayValue += play [i].altValue;
+    }
+    bool busted = false;
+    bool dealBusted = false;
+    int playReal = playValue>21? altplayValue:playValue;
+    int dealReal = dealValue>21? altdealValue:dealValue;
+    if (playReal > 21) 
+        busted = true;
+        
+    if (play.Count() == 2 && playValue == 21)
+    {   Console.WriteLine("BLACKJACK!");
+        return 2;
+    }
+    if (deal.Count() == 2 && dealValue == 21)
+    {
+        deal[0].hidden = false;
+        deal[0].printCard();
+        Console.WriteLine("Dealer has Blackjack, you lose.");
+        return 0;
+    }
+    char choice = '\0';
+    // players turn
+    while(!busted)
+    {
+        Console.WriteLine($"You have {playReal}, the dealer is showing {showing}. ");
+        Console.WriteLine("Do you want to (h)it, (s)tand, or (d)ouble ?");
+        bool acceptable = false;
+        while(!acceptable)
+        {
+            choice = (char)Console.ReadKey(true).KeyChar;
+            if (choice == 'h' || choice == 's' || choice == 'd')
+                acceptable = true;            
+        }
+        if(choice == 'h')
+        {
+            play= getCards(ref deck,play,1,false);
+            playValue += play[^1].value;
+            altplayValue += play[^1].altValue;
+            playReal = playValue>21? altplayValue:playValue;
+            if (playReal > 21)
+                busted = true;
+        }
+        else if (choice == 's')
+            break;
+        // same as a hit, but can only do it once.
+        else if (choice == 'd')
+        {
+            if(play.Count() > 2)
+                Console.WriteLine("You can only double down on the first card");
+            else
+            {
+                play= getCards(ref deck,play,1,false);
+                playValue += play[^1].value;
+                altplayValue += play[^1].altValue;
+                playReal = playValue>21? altplayValue:playValue;
+                if (playReal > 21)
+                    busted = true;
+                break;
+            }
+        }
+    }
+    // dealer's turn
+    deal[0].hidden = false;
+    deal[0].printCard();
+    while(dealReal < 17)
+    {
+        deal = getCards(ref deck,deal,1,true);
+        dealValue += deal[^1].value;
+        altdealValue += deal[^1].altValue;
+        dealReal = dealValue>21? altdealValue:dealValue;
+        if (dealReal > 21)
+            dealBusted = true;
+    }
+    if((dealBusted == true && busted == true) || playReal == dealReal)
+        return 3;
+    else if (playReal > dealReal)
+        return 1;
+    else    
+        return 0;  
+}
 class Card
 {
     // default constructor
@@ -268,3 +382,5 @@ class Card
     public int xValue;
     public int yValue;
 }
+
+
