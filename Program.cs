@@ -9,7 +9,7 @@ int bet = 0;
 while (playAgain.ToUpper() != "Q")
 {
     bet = betScreen(winnings);
-
+    playAgain = "Q";
 }
 
 Stack<Card> shuffleCards()
