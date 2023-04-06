@@ -37,6 +37,14 @@ while (playAgain != 'Q')
         case 3: 
             Console.WriteLine("You pushed");
             break;
+        case 4:
+            Console.WriteLine($"You Doubled Down and won {2*bet}");
+            winnings += 2*bet;
+            break;
+        case 5: 
+            Console.WriteLine($"You Doubled Down and Lost {2*bet}");
+            winnings -= 2*bet;
+            break;
     }
     Console.WriteLine("Press any key to play again or (Q) to quit");
     playAgain = Console.ReadKey(true).KeyChar;
@@ -176,6 +184,7 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
         altdealValue += deal[i].altValue;
         altplayValue += play[i].altValue;
     }
+    bool doubleDown = false;
     bool busted = false;
     bool dealBusted = false;
     int playReal = playValue>21? altplayValue:playValue;
@@ -183,7 +192,6 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
     if (playReal > 21) 
     {
         busted = true;
-        playReal = 0;
     }
         
     if (play.Count() == 2 && playValue == 21)
@@ -219,8 +227,7 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
             playReal = playValue>21? altplayValue:playValue;
             if (playReal > 21)
             {
-                busted = true;
-                playReal = 0;
+                busted = true;                
             }
         }
         else if (choice == 's')
@@ -238,6 +245,7 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
                 playReal = playValue>21? altplayValue:playValue;
                 if (playReal > 21)
                     busted = true;
+                doubleDown = true;
                 break;
             }
         }
@@ -264,19 +272,34 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
             break;
         }
     }
+
+    Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
     if((dealBusted == true && busted == true) || playReal == dealReal)
     {   
-        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 3;
+    }
+    else if (busted)
+    {
+        return 0;
+    }
+    else if (dealBusted)
+    {
+        return 1;
+    }
+    else if (playReal > dealReal && doubleDown == true )
+    {
+        return 4;
     }
     else if (playReal > dealReal)
     {
-        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 1;
     }
-    else   
+    else if (dealReal > playReal && doubleDown == true)
+    {
+        return 5;
+    }
+    else
     { 
-        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 0;  
     }
 }
