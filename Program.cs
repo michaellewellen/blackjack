@@ -1,29 +1,37 @@
-﻿Stack<Card> deckOfCards = shuffleCards();
-List<Card> dealersHand = new List<Card>();
+﻿List<Card> dealersHand = new List<Card>();
 List<Card> playersHand = new List<Card>();
 Console.Clear();
 loadMenu();
-string? playAgain = "Y";
-double winnings = 500;
-int bet = 0;
-while (playAgain != "Q")
+char? playAgain = 'Y';
+// winnings is how much money you have, no save system yet so you always start with $500
+double winnings = Convert.ToDouble(File.ReadAllText("playerInfo.txt"));
+double bet = 0;
+while (playAgain != 'Q')
 {
-    bet = betScreen(winnings);
+    // get a fresh deck of cards
+    Stack<Card> deckOfCards = shuffleCards();
+    bet = betScreen(ref winnings);
     Console.Clear();
+    // get cards will draw the number of cards in the 'int' field
+    dealersHand.Clear();
+    playersHand.Clear();
     dealersHand = getCards(ref deckOfCards,dealersHand,2,true);
     playersHand = getCards(ref deckOfCards,playersHand,2,false);
+    // gameStatus will determine if the player won, lost pushed or blackjacked
     int gameStatus = playTheGame(dealersHand,playersHand, ref deckOfCards);
+    Console.SetCursorPosition(0,14);
     switch (gameStatus)
     {
         case 0: 
             winnings -= bet;
-            Console.WriteLine("You lost!");
+            Console.WriteLine($"You lost {bet}");
             break;
         case 1: 
             winnings += bet;
-            Console.WriteLine("You Won");
+            Console.WriteLine($"You Won {bet}");
             break;
         case 2:
+            Console.WriteLine($"You Won {1.5*bet}");
             winnings += 1.5*bet;
             break;
         case 3: 
@@ -31,9 +39,11 @@ while (playAgain != "Q")
             break;
     }
     Console.WriteLine("Press any key to play again or (Q) to quit");
-    playAgain = Console.ReadKey(true).ToString();
-    playAgain = playAgain.ToUpper();
+    playAgain = Console.ReadKey(true).KeyChar;
+    if(playAgain == 'q')
+        playAgain = 'Q';
 }
+File.WriteAllText("playerInfo.txt",winnings.ToString());
 
 Stack<Card> shuffleCards()
 {
@@ -60,7 +70,7 @@ List<Card> getCards(ref Stack<Card> deck, List<Card> cards,int num, bool isDeale
 {
     Card temp;
     int size = cards.Count();
-    for (int i = cards.Count(); i< num+size; i++)
+    for (int i = size; i< num+size; i++)
     {
         temp = deck.Pop();
         if (i==0 && isDealer == true)
@@ -97,7 +107,7 @@ void loadMenu()
     Console.ReadKey(true);
 
 }
-int betScreen(double x)
+double betScreen(ref double winnings)
 {
     string placeYourBet = @"
     The game is Black Jack, your goal is to get 21.  If you do it in two cards thats a blackjack
@@ -119,10 +129,15 @@ int betScreen(double x)
         bottomRow[i].printCard();
     }
 
-   
     Console.SetCursorPosition(0,15);
     Console.WriteLine(placeYourBet);
-    Console.Write($"How much of your ${x} do you want to bet? ");
+
+    if (winnings <= 0)
+    {
+        winnings = 100;
+        Console.WriteLine("As you lost everything, the bank mercifully gave you $100");
+    }
+    Console.Write($"How much of your ${winnings} do you want to bet? ");
     bool validBet = false;
     int wager = 0;
     while(!validBet)
@@ -137,7 +152,7 @@ int betScreen(double x)
             Console.WriteLine("Ain't much point in playing if you don't bet anything.");
             validBet = false;
         }
-        else if (wager < 0 || wager > x)
+        else if (wager < 0 || wager > winnings)
         {
             Console.WriteLine("You just don't have that kinda money");
             validBet = false;
@@ -159,14 +174,17 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
         dealValue += deal[i].value;
         playValue += play[i].value;
         altdealValue += deal[i].altValue;
-        altplayValue += play [i].altValue;
+        altplayValue += play[i].altValue;
     }
     bool busted = false;
     bool dealBusted = false;
     int playReal = playValue>21? altplayValue:playValue;
     int dealReal = dealValue>21? altdealValue:dealValue;
     if (playReal > 21) 
+    {
         busted = true;
+        playReal = 0;
+    }
         
     if (play.Count() == 2 && playValue == 21)
     {   Console.WriteLine("BLACKJACK!");
@@ -176,6 +194,7 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
     {
         deal[0].hidden = false;
         deal[0].printCard();
+        deal[1].printCard();
         Console.WriteLine("Dealer has Blackjack, you lose.");
         return 0;
     }
@@ -199,7 +218,10 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
             altplayValue += play[^1].altValue;
             playReal = playValue>21? altplayValue:playValue;
             if (playReal > 21)
+            {
                 busted = true;
+                playReal = 0;
+            }
         }
         else if (choice == 's')
             break;
@@ -220,9 +242,15 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
             }
         }
     }
+    // erase betting screen
+    Console.SetCursorPosition(0,14);
+    Console.WriteLine("                                       ");
+    Console.WriteLine("                                       ");
+
     // dealer's turn
     deal[0].hidden = false;
     deal[0].printCard();
+    deal[1].printCard();
     while(dealReal < 17)
     {
         deal = getCards(ref deck,deal,1,true);
@@ -230,157 +258,27 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
         altdealValue += deal[^1].altValue;
         dealReal = dealValue>21? altdealValue:dealValue;
         if (dealReal > 21)
+        {
             dealBusted = true;
+            dealReal = 0;
+            break;
+        }
     }
     if((dealBusted == true && busted == true) || playReal == dealReal)
+    {   
+        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 3;
+    }
     else if (playReal > dealReal)
+    {
+        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 1;
-    else    
+    }
+    else   
+    { 
+        Console.WriteLine($"{dealReal} for dealer and {playReal} for player");
         return 0;  
-}
-class Card
-{
-    // default constructor
-    public Card(){}
-    // constructor
-    public Card(int num)
-    {
-        suit = getSuit((num-1)/13);
-        number = getNumber ((num-1)%13);
-        value = getValue(number);
-        if (value == 11)
-            altValue = 1;
-        else    
-            altValue = value;
-        hidden = false;
-        xValue = 0;
-        yValue = 0;
-
     }
-    char getSuit(int x)
-    {
-        switch (x)
-        {
-            case 0:
-                return '♠';
-            case 1:
-                return '♣';
-            case 2:
-                return '♥';
-            case 3:
-                return '♦';
-            default:
-                return '0';
-        }
-    }
-    char getNumber(int x)
-    {
-        switch (x)
-        {
-            case 0:
-                return 'A';
-            case 1:
-                return '2';
-            case 2:
-                return '3';
-            case 3:
-                return '4';
-            case 4:
-                return '5';
-            case 5:
-                return '6';
-            case 6:
-                return '7';
-            case 7:
-                return '8';
-            case 8:
-                return '9';
-            case 9:
-                return 'T';
-            case 10:
-                return 'J';
-            case 11:
-                return 'Q';
-            case 12:
-                return 'K';
-            default:
-                return '0';
-        }
-    }
-    int getValue(int x)
-    {
-        switch (x)
-        {
-            case 'A':
-                return 11;
-            case '2':
-                return 2;
-            case '3':
-                return 3;
-            case '4':
-                return 4;
-            case '5':
-                return 5;
-            case '6':
-                return 6;
-            case '7':
-                return 7;
-            case '8':
-                return 8;
-            case '9':
-                return 9;
-            case 'T':
-            case 'J':
-            case 'Q':
-            case 'K':
-                return 10;
-            default:
-                return 0;
-        }
-    }
-    public void printCard()
-    {
-        Console.SetCursorPosition(xValue,yValue);
-        Console.SetCursorPosition(xValue,yValue);
-        Console.SetCursorPosition(xValue,yValue);
-        Console.SetCursorPosition(xValue,yValue);
-        if(hidden)
-        {
-            Console.WriteLine("┌───────┐");   
-            Console.SetCursorPosition(xValue,yValue+1);
-            Console.WriteLine("│▒▒▒▒▒▒▒│");
-            Console.SetCursorPosition(xValue,yValue+2);
-            Console.WriteLine("│▒▒▒▒▒▒▒│");
-            Console.SetCursorPosition(xValue,yValue+3);
-            Console.WriteLine("│▒▒▒▒▒▒▒│");
-            Console.SetCursorPosition(xValue,yValue+4);
-            Console.WriteLine("│▒▒▒▒▒▒▒│");
-            Console.SetCursorPosition(xValue,yValue+5);
-            Console.WriteLine("└───────┘");
-        }
-        else
-        {
-            Console.WriteLine("┌───────┐");   
-            Console.SetCursorPosition(xValue,yValue+1);
-            Console.WriteLine($"│{number}{suit}     │");
-            Console.SetCursorPosition(xValue,yValue+2);
-            Console.WriteLine("│       │");
-            Console.SetCursorPosition(xValue,yValue+3);
-            Console.WriteLine($"│   {suit}   │");
-            Console.SetCursorPosition(xValue,yValue+4);
-            Console.WriteLine("│       │");
-            Console.SetCursorPosition(xValue,yValue+5);
-            Console.WriteLine("└───────┘");            
-        }
-    }
-    public char suit;
-    public char number;
-    public int value;
-    public int altValue;
-    public bool hidden;
-    public int xValue;
-    public int yValue;
 }
 
 
