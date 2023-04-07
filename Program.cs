@@ -2,6 +2,7 @@
 List<Card> playersHand = new List<Card>();
 Console.Clear();
 loadMenu();
+int numberOfPlays = 1;
 char? playAgain = 'Y';
 // winnings is how much money you have, no save system yet so you always start with $500
 double winnings = Convert.ToDouble(File.ReadAllText("playerInfo.txt"));
@@ -10,7 +11,7 @@ while (playAgain != 'Q')
 {
     // get a fresh deck of cards
     Stack<Card> deckOfCards = shuffleCards();
-    bet = betScreen(ref winnings);
+    bet = betScreen(ref winnings, numberOfPlays);
     Console.Clear();
     // get cards will draw the number of cards in the 'int' field
     dealersHand.Clear();
@@ -18,7 +19,7 @@ while (playAgain != 'Q')
     dealersHand = getCards(ref deckOfCards,dealersHand,2,true);
     playersHand = getCards(ref deckOfCards,playersHand,2,false);
     // gameStatus will determine if the player won, lost pushed or blackjacked
-    int gameStatus = playTheGame(dealersHand,playersHand, ref deckOfCards);
+    int gameStatus = playTheGame(dealersHand,playersHand, ref deckOfCards, winnings, bet);
     Console.SetCursorPosition(0,14);
     switch (gameStatus)
     {
@@ -31,7 +32,7 @@ while (playAgain != 'Q')
             Console.WriteLine($"You Won {bet}");
             break;
         case 2:
-            Console.WriteLine($"You Won {1.5*bet}");
+            Console.WriteLine($"BLACKJACK!! You Won {1.5*bet}");
             winnings += 1.5*bet;
             break;
         case 3: 
@@ -50,6 +51,8 @@ while (playAgain != 'Q')
     playAgain = Console.ReadKey(true).KeyChar;
     if(playAgain == 'q')
         playAgain = 'Q';
+    else
+        numberOfPlays ++;
 }
 File.WriteAllText("playerInfo.txt",winnings.ToString());
 
@@ -115,31 +118,33 @@ void loadMenu()
     Console.ReadKey(true);
 
 }
-double betScreen(ref double winnings)
+double betScreen(ref double winnings, int x)
 {
-    string placeYourBet = @"
-    The game is Black Jack, your goal is to get 21.  If you do it in two cards thats a blackjack
-    pays 3/2 regular win doubles your bet. The house has to hit on 16, stay on 17
+string placeYourBet = @"
+The game is Black Jack, your goal is to get 21.  If you do it in two cards thats a blackjack
+pays 3/2 regular win doubles your bet. The house has to hit on 16, stay on 17
     
     ";
     Console.Clear();
-    Stack<Card> deck = shuffleCards();
-    List<Card> topRow = new List<Card>();
-    List<Card> bottomRow = new List<Card>();
-    topRow = getCards(ref deck,topRow,5,true);
-    bottomRow = getCards(ref deck,bottomRow,5,false);
-    for (int i = 0; i<topRow.Count(); i++)
+    if(x == 1)
     {
-        topRow[i].hidden = true;
-        bottomRow[i].hidden = true;
-        
-        topRow[i].printCard();
-        bottomRow[i].printCard();
+        Stack<Card> deck = shuffleCards();
+        List<Card> topRow = new List<Card>();
+        List<Card> bottomRow = new List<Card>();
+        topRow = getCards(ref deck,topRow,10,true);
+        bottomRow = getCards(ref deck,bottomRow,10,false);
+        for (int i = 0; i<topRow.Count(); i++)
+        {
+            topRow[i].hidden = true;
+            bottomRow[i].hidden = true;
+            
+            topRow[i].printCard();
+            bottomRow[i].printCard();
+        }
+
+        Console.SetCursorPosition(0,15);
+        Console.WriteLine(placeYourBet);
     }
-
-    Console.SetCursorPosition(0,15);
-    Console.WriteLine(placeYourBet);
-
     if (winnings <= 0)
     {
         winnings = 100;
@@ -168,8 +173,7 @@ double betScreen(ref double winnings)
     }
     return wager;
 }
-
-int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
+int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck,double bank, double bet)
 {
     Console.SetCursorPosition(0,14 );
     int showing = deal[1].value;
@@ -216,8 +220,15 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
         while(!acceptable)
         {
             choice = (char)Console.ReadKey(true).KeyChar;
-            if (choice == 'h' || choice == 's' || choice == 'd')
+            if (choice == 'h' || choice == 's')
                 acceptable = true;            
+            if (choice == 'd')
+            {
+                if(bank > bet*2)
+                    acceptable = true;
+                else    
+                    Console.WriteLine("Partner you can't afford to double down");
+            } 
         }
         if(choice == 'h')
         {
@@ -256,12 +267,16 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
     Console.WriteLine("                                       ");
 
     // dealer's turn
+    int pauseTime = 500; 
     deal[0].hidden = false;
     deal[0].printCard();
+    Thread.Sleep(pauseTime);
     deal[1].printCard();
+    Thread.Sleep(pauseTime);
     while(dealReal < 17)
     {
         deal = getCards(ref deck,deal,1,true);
+        Thread.Sleep(pauseTime);
         dealValue += deal[^1].value;
         altdealValue += deal[^1].altValue;
         dealReal = dealValue>21? altdealValue:dealValue;
@@ -279,14 +294,22 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
     }
     if (doubleDown)
     {
-        if(busted || dealReal > playReal)
+        if(busted)
+            return 5;
+        else if (dealBusted)
+            return 4;
+        else if (dealReal > playReal)
             return 5;
         else
             return 4;
     }
     else 
     {
-        if(busted || dealReal > playReal)
+        if(busted)
+            return 0;
+        else if (dealBusted)
+            return 1;
+        else if (dealReal > playReal)
             return 0;
         else
             return 1;
