@@ -268,7 +268,6 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
         if (dealReal > 21)
         {
             dealBusted = true;
-            dealReal = 0;
             break;
         }
     }
@@ -278,30 +277,21 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck)
     {   
         return 3;
     }
-    else if (busted)
+    if (doubleDown)
     {
-        return 0;
+        if(busted || dealReal > playReal)
+            return 5;
+        else
+            return 4;
     }
-    else if (dealBusted)
+    else 
     {
-        return 1;
+        if(busted || dealReal > playReal)
+            return 0;
+        else
+            return 1;
     }
-    else if (playReal > dealReal && doubleDown == true )
-    {
-        return 4;
-    }
-    else if (playReal > dealReal)
-    {
-        return 1;
-    }
-    else if (dealReal > playReal && doubleDown == true)
-    {
-        return 5;
-    }
-    else
-    { 
-        return 0;  
-    }
+    
 }
 
 
