@@ -1,4 +1,8 @@
-﻿List<Card> dealersHand = new List<Card>();
+﻿tumbler x = new tumbler();
+Console.Clear();
+//x.printCherry();
+Console.ReadKey(true);
+List<Card> dealersHand = new List<Card>();
 List<Card> playersHand = new List<Card>();
 Console.Clear();
 loadMenu();
@@ -108,13 +112,13 @@ void loadMenu()
  |:  1    \                  |:  1   |                       
  |::.. .  /                  |::.. . |                       
  `-------'                   `-------'                       ";
-    Console.BackgroundColor = ConsoleColor.White;
+    Console.BackgroundColor = ConsoleColor.DarkGray;
     Console.ForegroundColor = ConsoleColor.Red;
     Console.WriteLine(welcome);
     Console.BackgroundColor = ConsoleColor.Black;
     Console.ForegroundColor = ConsoleColor.White;
 
-    Console.WriteLine("\n              Press any key to continue");
+    Console.Write("\n              Press any key to continue");
     Console.ReadKey(true);
 
 }
@@ -318,3 +322,29 @@ int playTheGame(List<Card> deal, List<Card> play, ref Stack<Card> deck,double ba
 }
 
 
+class tumbler
+{
+    string cherry = @"                                                                                     
+                                            ██████████                                  
+                                          ██████████                                    
+                                        ██████████                                      
+                                        ████████                                        
+                                        ██                                              
+                                        ██                                              
+                                      ██  ██                                            
+                                    ██      ██                                          
+                                  ██          ██                                        
+                                  ██          ██                                        
+                                  ██          ██                                        
+                                ██████      ██████                                      
+                              ██████  ██  ██████  ██                                    
+                              ██████████  ██████████                                    
+                              ██████████  ██████████                                    
+                                ██████      ██████                                      
+";
+  public void printCherry()
+    {   
+        Console.Clear();
+        Console.Write(cherry);
+    }
+}
